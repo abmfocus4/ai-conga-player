@@ -1,4 +1,4 @@
-import sys
+import sys, copy, pickle
 from lib import constants as const
 
 # 4x4 board
@@ -30,9 +30,34 @@ class CongaBoard():
         self.pieces[4][1] = 10
 
     def display(self):
-        pass   
+        keys = self.pieces.keys()
+        reversed = pickle.loads(pickle.dumps(list(keys)))
+        reversed.reverse()
 
+        # print row column numbers
+        sys.stdout.write('\n     1     2     3      4')
+        sys.stdout.write('\n     _____ _____ _____ _____\n')
 
+        # print number of pieces in square
+        for col in reversed:
+            sys.stdout.write('    |     |     |     |     |\n    |')
+            for row in keys:
+                # set color
+                player_type = self.player[row][col]
+                if player_type == const.BLACK:
+                    color = const.PURPLE
+                elif player_type == const.WHITE:   
+                    color = const.RED
+                else:
+                    color = const.GREEN
+                
+                # print row
+                num_pieces = str(self.pieces[row][col])
+                if len(num_pieces) == 1:
+                    num_pieces = ' ' + num_pieces
+                sys.stdout.write(' ' + color + num_pieces + '\033[0m' + '  |')
 
+            # print bottom of row with row number
+            sys.stdout.write('\n ' + str(col) + '  |_____|_____|_____|_____|\n')
 
-        
+        print("")
