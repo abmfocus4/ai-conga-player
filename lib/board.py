@@ -7,15 +7,15 @@ class CongaBoard():
     def __init__(self):
         super().__init__()
         # who occupies the square
-        self.player = {}
+        self.player = dict()
         # how many pieces in the square
-        self.pieces = {}
+        self.pieces = dict()
 
         # initialize board - no player, no pieces
-        for row in range (1,const.ROWS):
-            self.player[row] = {}
-            self.pieces[row] = {}
-            for col in range(1,const.COLS):
+        for row in range (1,const.ROWS+1):
+            self.player[row] = dict()
+            self.pieces[row] = dict()
+            for col in range(1,const.COLS+1):
                 self.player[row][col] = const.NULL
                 self.pieces[row][col] = 0
 
@@ -29,7 +29,8 @@ class CongaBoard():
         self.player[4][1] = const.WHITE
         self.pieces[4][1] = 10
 
-        
+    def display(self):
+        pass   
 
 
 
