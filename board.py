@@ -1,5 +1,5 @@
-import sys, copy, pickle
-from lib import constants as const
+import sys, pickle
+import constants as const
 
 # 4x4 board
 # player1 has 10b (1,4) , player2 has 10w (4,1)
@@ -8,29 +8,31 @@ class CongaBoard():
         super().__init__()
         # who occupies the square
         self.player = dict()
-        # how many pieces in the square
-        self.pieces = dict()
+        # how many stones in the square
+        self.stones = dict()
+        # flag to determine if board is returned after playing valid move
+        self.valid_move = False
 
-        # initialize board - no player, no pieces
+        # initialize board - no player, no stones
         for row in range (1,const.ROWS+1):
             self.player[row] = dict()
-            self.pieces[row] = dict()
+            self.stones[row] = dict()
             for col in range(1,const.COLS+1):
                 self.player[row][col] = const.NULL
-                self.pieces[row][col] = 0
+                self.stones[row][col] = 0
 
 
         # first positions
-        # Player1 at (1,4) has 10 black pieces
+        # Player1 at (1,4) has 10 black stones
         self.player[1][4] = const.BLACK
-        self.pieces[1][4] = 10
+        self.stones[1][4] = 10
 
-        # Player2 at (4,1) has 10 white pieces
+        # Player2 at (4,1) has 10 white stones
         self.player[4][1] = const.WHITE
-        self.pieces[4][1] = 10
+        self.stones[4][1] = 10
 
     def display(self):
-        keys = self.pieces.keys()
+        keys = self.stones.keys()
         reversed = pickle.loads(pickle.dumps(list(keys)))
         reversed.reverse()
 
@@ -38,7 +40,7 @@ class CongaBoard():
         sys.stdout.write('\n     1     2     3      4')
         sys.stdout.write('\n     _____ _____ _____ _____\n')
 
-        # print number of pieces in square
+        # print number of stones in square
         for col in reversed:
             sys.stdout.write('    |     |     |     |     |\n    |')
             for row in keys:
@@ -52,10 +54,10 @@ class CongaBoard():
                     color = const.GREEN
                 
                 # print row
-                num_pieces = str(self.pieces[row][col])
-                if len(num_pieces) == 1:
-                    num_pieces = ' ' + num_pieces
-                sys.stdout.write(' ' + color + num_pieces + '\033[0m' + '  |')
+                num_stones = str(self.stones[row][col])
+                if len(num_stones) == 1:
+                    num_stones = ' ' + num_stones
+                sys.stdout.write(' ' + color + num_stones + '\033[0m' + '  |')
 
             # print bottom of row with row number
             sys.stdout.write('\n ' + str(col) + '  |_____|_____|_____|_____|\n')

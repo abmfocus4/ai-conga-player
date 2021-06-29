@@ -15,3 +15,10 @@ RANDOM = 1
 PURPLE = '\033[35m'
 RED = '\033[31m'
 GREEN = '\033[92m'
+
+# strings for player and opponent
+STR_RANDOM = 'Random Agent(White)'
+STR_COMPUTER = 'Computer(Black)'
+
+# for minmax pruning
+MAX_DEPTH = 3
