@@ -32,7 +32,7 @@ def main():
             if int(max_moves)<=0:
                 print("Try again! Number of moves in an active game are greater than zero\n")
     else:
-        max_moves = 3000
+        max_moves = 100
 
     # # white is random agent
     random_agent = agent.Agent(constants.WHITE)
@@ -49,14 +49,30 @@ def main():
         conga_board.display()
         moves += 1
 
-    play = 'y'
-
     # first move set 
     # white makes the first move, followed by black
     #  
-    while(conga_board.valid_move and moves < max_moves):
+    while(conga_board.valid_move):
         # print('here')
         # print(white_locations)
+        # if (moves < max_moves) :
+        #     # set of squares where black has stones
+        #     black_locations = set()
+        #     # set of squares where black has stones
+        #     white_locations = set()
+
+        #     # create board
+        #     conga_board = board.CongaBoard()
+
+        #     # add initial positions
+        #     black_locations.add((1,4))
+        #     white_locations.add((4,1))
+
+        #     # # white is random agent
+        #     random_agent = agent.Agent(constants.WHITE)
+        #     # black is computer
+        #     computer = agent.Agent(constants.BLACK)
+
         conga_board = random_agent.make_move(conga_board, white_locations, black_locations)
         # print(white_locations)
         conga_board.display()
@@ -70,7 +86,7 @@ def main():
         print("")
 
         # play = input('Press Y to continue:')
-        # if play != 'y':
+        # if play != 'y' and moves > 100:
         #     break
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%")

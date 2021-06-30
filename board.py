@@ -47,11 +47,11 @@ class CongaBoard():
                 # set color
                 player_type = self.player[row][col]
                 if player_type == const.BLACK:
-                    color = const.PURPLE
-                elif player_type == const.WHITE:   
                     color = const.RED
-                else:
+                elif player_type == const.WHITE:   
                     color = const.GREEN
+                else:
+                    color = const.PURPLE
                 
                 # print row
                 num_stones = str(self.stones[row][col])
