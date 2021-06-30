@@ -34,13 +34,21 @@ class Agent():
     # is not occupied by opponent
     def is_valid_move(self, col, row, direction, opponent_squares):
         dest = (col+direction[0], row+direction[1])
-        if (dest[1] >= 1) and (dest[1] <= const.ROWS) and (dest[0] >= 1) and (dest[0] <= const.COLS) and ((col,row) not in opponent_squares):
+        if (dest[1] >= 1) and (dest[1] <= const.ROWS) and (dest[0] >= 1) and (dest[0] <= const.COLS) and (dest not in opponent_squares):
             return True
         return False
     
     # moving stones on the board
     def update_board(self, board, src, dest, given_stones, player_squares):
+        # print('begin')
+        # print('given stones')
+        # print(given_stones)
+        # print(player_squares)
         total_stones = board.stones[src[0]][src[1]]
+        # print('src')
+        # print(src)
+        # print('total_stones')
+        # print(total_stones)
 
         stones = 0
         if given_stones > total_stones:
@@ -57,154 +65,207 @@ class Agent():
             if board.stones[src[0]][src[1]] <= 0:
                 board.stones[src[0]][src[1]] = 0
                 board.player[src[0]][src[1]] = const.NULL
-                if dest in player_squares:
-                    player_squares.remove(dest)
+                if src in player_squares:
+                    player_squares.remove(src)
 
             print('Move: Board updated by moving '+str(stones)+' stones from '+str(src)+' to '+str(dest))
 
     def static_eval(self, player_squares, opponent_squares):
         cost = 0
-        directions = self.move_directions()
+        # directions = self.move_directions()
 
-        freedom = 0
-        # freedom of movement for player
-        for player_square in player_squares:
-            cost+=1
-            # only need to block 3 squares
-            if player_square[0] or player_square[1]in [1,4]:
-                freedom -=1
-            
-            # moves restricted
-            for direction in directions:
-                if not self.is_valid_move(player_square[0], player_square[1], direction, opponent_squares):
-                    freedom -= 4
-                else:
-                    freedom +=2
+        # for square in player_squares:
+        #     for dir in directions:
+        #         if self.is_valid_move(square[0], square[1], dir, opponent_squares):
+        #             cost += 4
+                
+        # for square in opponent_squares:
+        #     for dir in directions:
+        #         if self.is_valid_move(square[0], square[1], dir, opponent_squares):
+        #             cost -=2
         
-        # freedom of movement for opponent
-        for opponent_square in opponent_squares:
-            cost-=1
-            # only need to block 3 squares
-            if opponent_square[0] or opponent_square[1]in [1,4]:
-                freedom +=1
-            
-            # potential moves
-            for direction in directions:
-                if not self.is_valid_move(opponent_square[0], opponent_square[1], direction, opponent_squares):
-                    freedom += 4
-                else:
-                    freedom -=2
-        # TODO: try just cost or freedom alone
-        return len(player_squares)-len(opponent_squares)
-    
-    # return final moves set after doing minmax and alpha-beta pruning - True, 3|2, -inf, inf, list()
-    def minmax_pruning(self, maximizing_player, white_locations, black_locations, depth, alpha, beta, final_moves):
-        my_squares = list()
-        opponent_squares = list()
+        cost = len(player_squares) - len(opponent_squares)
+        return cost
+
+    def minimizing_player(self, white_locations, black_locations, max_eval):
+        min_eval = math.inf
+        my_squares = set(white_locations)
+        opponent_squares = set(black_locations)
+
+        # no need to collect moves here, we have random minimizing player
+
+        # just collections new squares that will be occupied by white
 
         directions = self.move_directions()
-        # base condition
-        if(depth == 0) :
-            if maximizing_player:
-                # print(final_moves)
-                return self.static_eval(black_locations, white_locations)
-            else:
-                # print(final_moves)
-                return self.static_eval(white_locations, black_locations)
+        for square in my_squares:
+            for dir in directions:
+                new_squares = list(my_squares)
 
-        # black locations changed
-        if (maximizing_player):
-            max_eval = -math.inf
-            my_squares = set(black_locations)
-            opponent_squares = set(white_locations)
-            # for each child of position
-            for square in my_squares:
-                col = square[0]
-                row = square[1]
-                for dir in directions:
-                    # log new moves and updated squares
-                    new_squares = list()
-                    moves = list()
+                if self.is_valid_move(square[0], square[1], dir, opponent_squares):
+                    first = self.get_move(square[0], square[1], dir)
+                    new_squares.append(first)
 
-                    # first move
-                    first = self.get_move(col, row, dir)
                     if self.is_valid_move(first[0], first[1], dir, opponent_squares):
-                        new_squares.append(first)
-                        moves.append(square)
-                        moves.append(first)
-
-                        # second move
                         second = self.get_move(first[0], first[1], dir)
+                        new_squares.append(second)
+
                         if self.is_valid_move(second[0], second[1], dir, opponent_squares):
-                            new_squares.append(second)
-                            moves.append(second)
-                        
-                            #third move
                             third = self.get_move(second[0], second[1], dir)
-                            if self.is_valid_move(third[0], third[1], dir, opponent_squares):
-                                new_squares.append(third)
-                                moves.append(third)
-                    
-                        # get eval - minimizing player
-                        eval = self.minmax_pruning(False, white_locations, my_squares, depth-1, alpha, beta, moves)
+                            new_squares.append(third)
 
-                        # get maxEval
-                        if eval >= max_eval:
-                            max_eval = eval
-                            if depth == const.MAX_DEPTH:
-                                final_moves = set(moves)
-                        
-                        # pruning
-                        alpha = max(alpha, eval)
-                        if beta <= alpha:
-                            break
-                    
-            return max_eval
-        # minimizing player
-        else:
-            min_eval = math.inf
-            my_squares = set(white_locations)
-            opponent_squares = set(black_locations)
-            # for each child of position
-            for square in my_squares:
-                col = square[0]
-                row = square[1]
-                for dir in directions:
-                    # log new moves and updated squares
-                    new_squares = list()
-                    # moves = list()
+                            eval = self.static_eval(opponent_squares, new_squares)
 
-                    # first move
-                    first = self.get_move(col, row, dir)
+                            if eval < max_eval:
+                                return eval
+
+                            if eval < min_eval:
+                                min_eval = eval
+        return min_eval
+
+    def maximizing_player(self, white_locations, black_locations):
+        final_moves = list()
+
+        max_eval = -math.inf
+        my_squares = set(black_locations)
+        opponent_squares = set(white_locations)
+
+        directions = self.move_directions()
+        for square in my_squares:
+            for dir in directions:
+                new_squares = list(my_squares)
+                current_moves = list()
+
+                if self.is_valid_move(square[0], square[1], dir, opponent_squares):
+                    first = self.get_move(square[0], square[1], dir)
+                    new_squares.append(first)
+                    current_moves.append(square)
+                    current_moves.append(first)
+
                     if self.is_valid_move(first[0], first[1], dir, opponent_squares):
-                        new_squares.append(first)
-                        # moves.append(square)
-                        # moves.append(first)
-
-                        # second move
                         second = self.get_move(first[0], first[1], dir)
-                        if self.is_valid_move(second[0], second[1], dir, opponent_squares):
-                            new_squares.append(second)
-                            # moves.append(second)
-                        
-                            #third move
-                            third = self.get_move(second[0], second[1], dir)
-                            if self.is_valid_move(third[0], third[1], dir, opponent_squares):
-                                new_squares.append(third)
-                                # moves.append(third)
-                        # get eval - maximizing player
-                        eval = self.minmax_pruning(True, my_squares, black_locations, depth-1, alpha, beta, final_moves)
+                        new_squares.append(second)
+                        current_moves.append(second)
 
-                        # get minEval
-                        if eval < min_eval:
-                            min_eval = eval
-                            # final_moves = set(moves)
+                        if self.is_valid_move(second[0], second[1], dir, opponent_squares):
+                            third = self.get_move(second[0], second[1], dir)
+                            new_squares.append(third)
+                            current_moves.append(third)
+                    # max_eval = alpha
+                    eval = self.minimizing_player(white_locations, new_squares, max_eval)
+
+                    if eval >= max_eval:
+                        max_eval = eval
+                        final_moves = list(current_moves)
+        return final_moves
+
+    # return final moves set after doing minmax and alpha-beta pruning - True, 3|2, -inf, inf, list()
+    # def minmax_pruning(self, maximizing_player, white_locations, black_locations, depth, alpha, beta, final_moves):
+    #     my_squares = list()
+    #     opponent_squares = list()
+
+    #     directions = self.move_directions()
+    #     # base condition
+    #     if(depth == 0) :
+    #         if maximizing_player:
+    #             # print(final_moves)
+    #             return (self.static_eval(black_locations, white_locations), final_moves)
+    #         else:
+    #             # print(final_moves)
+    #             return (self.static_eval(white_locations, black_locations), final_moves)
+
+    #     # black locations changed
+    #     if (maximizing_player):
+    #         max_eval = -math.inf
+    #         my_squares = set(black_locations)
+    #         opponent_squares = set(white_locations)
+    #         # for each child of position
+    #         for square in my_squares:
+    #             col = square[0]
+    #             row = square[1]
+    #             for dir in directions:
+    #                 # log new moves and updated squares
+    #                 new_squares = list()
+    #                 moves = list()
+
+    #                 # first move
+    #                 first = self.get_move(col, row, dir)
+    #                 if self.is_valid_move(first[0], first[1], dir, opponent_squares):
+    #                     new_squares.append(first)
+    #                     moves.append(square)
+    #                     moves.append(first)
+
+    #                     # second move
+    #                     second = self.get_move(first[0], first[1], dir)
+    #                     if self.is_valid_move(second[0], second[1], dir, opponent_squares):
+    #                         new_squares.append(second)
+    #                         moves.append(second)
                         
-                        # pruning
-                        alpha = min(beta, eval)
-                        if beta <= alpha:
-                            break
-            return min_eval
+    #                         #third move
+    #                         third = self.get_move(second[0], second[1], dir)
+    #                         if self.is_valid_move(third[0], third[1], dir, opponent_squares):
+    #                             new_squares.append(third)
+    #                             moves.append(third)
+                    
+    #                     # get eval - minimizing player
+    #                     eval, final_moves = self.minmax_pruning(False, white_locations, my_squares, depth-1, alpha, beta, moves)
+
+    #                     # get maxEval
+    #                     if eval >= max_eval:
+    #                         max_eval = eval
+    #                         if depth == const.MAX_DEPTH:
+    #                             final_moves = set(moves)
+                        
+    #                     # pruning
+    #                     alpha = max(alpha, eval)
+    #                     if beta <= alpha:
+    #                         break
+                    
+    #         return max_eval
+    #     # minimizing player
+    #     else:
+    #         min_eval = math.inf
+    #         my_squares = set(white_locations)
+    #         opponent_squares = set(black_locations)
+    #         # for each child of position
+    #         for square in my_squares:
+    #             col = square[0]
+    #             row = square[1]
+    #             for dir in directions:
+    #                 # log new moves and updated squares
+    #                 new_squares = list()
+    #                 # moves = list()
+
+    #                 # first move
+    #                 first = self.get_move(col, row, dir)
+    #                 if self.is_valid_move(first[0], first[1], dir, opponent_squares):
+    #                     new_squares.append(first)
+    #                     # moves.append(square)
+    #                     # moves.append(first)
+
+    #                     # second move
+    #                     second = self.get_move(first[0], first[1], dir)
+    #                     if self.is_valid_move(second[0], second[1], dir, opponent_squares):
+    #                         new_squares.append(second)
+    #                         # moves.append(second)
+                        
+    #                         #third move
+    #                         third = self.get_move(second[0], second[1], dir)
+    #                         if self.is_valid_move(third[0], third[1], dir, opponent_squares):
+    #                             new_squares.append(third)
+    #                             # moves.append(third)
+    #                     # get eval - maximizing player
+    #                     eval, final_moves = self.minmax_pruning(True, my_squares, black_locations, depth-1, alpha, beta, final_moves)
+
+    #                     # get minEval
+    #                     if eval < min_eval:
+    #                         min_eval = eval
+    #                         # final_moves = set(final_moves)
+                        
+    #                     # pruning
+    #                     alpha = min(beta, eval)
+    #                     if beta <= alpha:
+    #                         break
+    #         return min_eval
 
     # return (board + valid)
     def make_move(self, board, white_locations, black_locations):
@@ -239,10 +300,12 @@ class Agent():
                         # if second pos is invalid - move all stones to first
                         second = self.get_move(first[0], first[1], direction)
                         if not self.is_valid_move(first[0], first[1], direction, opponent_squares):
-                            print('1')
+                            # print('1')
                             # print(second)
                             # print(direction)
                             self.update_board(board, square, first, num_stones, my_squares)
+                            # set white_locations after update
+                            white_locations = set(my_squares)
                             board.valid_move = True
                             return board
                         else:
@@ -250,17 +313,22 @@ class Agent():
                             third = self.get_move(second[0], second[1], direction)
                             # print(third)
                             if not self.is_valid_move(second[0], second[1], direction, opponent_squares):
-                                print('2')
+                                # print('2')
                                 self.update_board(board, square, first, 1, my_squares)
                                 self.update_board(board, square, second, num_stones-1, my_squares)
+                                # set white_locations after update
+                                white_locations = set(my_squares)
                                 board.valid_move = True
                                 return board
                             else:
-                                print('3')
+                                # print('3')
                                 self.update_board(board, square, first, 1, my_squares)
                                 self.update_board(board, square, second, 2, my_squares)
                                 self.update_board(board, square, third, num_stones-3, my_squares)
-                                print(board.stones)
+                                # print(board.stones)
+                                # set white_locations after update
+                                # print(my_squares)
+                                white_locations = set(my_squares)
                                 board.valid_move = True
                                 return board           
             print('Unable to move, surrounded by black squares. '+const.STR_RANDOM+' has lost to '+const.STR_COMPUTER+'.')
@@ -271,10 +339,10 @@ class Agent():
         else:
             print('Computer: BLACK playing')
             moves = list()
-            self.minmax_pruning(True, white_locations, black_locations, const.MAX_DEPTH, -math.inf, math.inf, moves)
+            (moves) = self.maximizing_player(white_locations, black_locations)
 
             num_moves = len(moves)
-            print(moves)
+            # print(moves)
             if num_moves == 0:
                 print('Unable to move, surrounded by white squares. '+const.STR_COMPUTER+' has lost to '+const.STR_RANDOM+'.')
                 board.valid_move = False
@@ -285,14 +353,20 @@ class Agent():
                 row = initial[1]
                 num_stones = board.stones[col][row]
                 if num_moves == 4:
+                    print('4')
+                    # print(num_stones)
+                    # print(moves)
                     self.update_board(board, initial, moves[1], 1, my_squares)
                     self.update_board(board, initial, moves[2], 2, my_squares)
                     self.update_board(board, initial, moves[3], num_stones-3, my_squares)
                 elif num_moves == 3:
+                    # print('3')
                     self.update_board(board, initial, moves[1], 1, my_squares)
                     self.update_board(board, initial, moves[2], num_stones-1, my_squares)
                 elif num_moves ==2:
+                    # print('2')
                     self.update_board(board, initial, moves[1], num_stones, my_squares)
-                
+                # set black_locations after update
+                black_locations = set(my_squares)
                 board.valid_move = True
                 return board
