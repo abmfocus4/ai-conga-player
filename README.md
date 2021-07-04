@@ -29,6 +29,8 @@ The first few lines of the output introduce you to the player.
 
 ### Board Display
 
+![1625420944833.png](image/README/1625420944833.png)
+
 The row and column numbers are assigned represented in the question. Each square contains the number of stones in that location. BLACK occupied squares are in RED and WHITE occupied squares are in GREEN.
 
 ### Following player moves
