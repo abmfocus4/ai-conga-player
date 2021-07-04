@@ -116,24 +116,29 @@ class Agent:
             current_square = move[0]
             col_idx = current_square[0]
             row_idx = current_square[1]
+
             num = board.stones[col_idx][row_idx]
-            if len(move) == 2:
-                self.update_board(
-                    board, current_square, move[1], num, max_player_squares)
-                return True
-            elif len(move) == 3:
-                self.update_board(
-                    board, current_square, move[1], 1, max_player_squares)
-                self.update_board(
-                    board, current_square, move[2], num - 1, max_player_squares)
-                return True
-            elif len(move) == 4:
+            num_steps = len(move) - 1
+
+            if num_steps == 3:
                 self.update_board(
                     board, current_square, move[1], 1, max_player_squares)
                 self.update_board(
                     board, current_square, move[2], 2, max_player_squares)
                 self.update_board(
                     board, current_square, move[3], num - 3, max_player_squares)
+                return True
+
+            elif num_steps == 2:
+                self.update_board(
+                    board, current_square, move[1], 1, max_player_squares)
+                self.update_board(
+                    board, current_square, move[2], num - 1, max_player_squares)
+                return True
+
+            elif num_steps == 1:
+                self.update_board(
+                    board, current_square, move[1], num, max_player_squares)
                 return True
 
             print("No move possible WHITE LOST")
