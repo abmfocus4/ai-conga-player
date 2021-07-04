@@ -12,7 +12,7 @@
 
 Use the Makefile provided in the directory to run the program.
 
-Download the folder on your local, navigate inside the directory where the Makefile is stored using the console. Run one of the 
+Download the folder on your local, navigate inside the directory where the Makefile is stored using the console. Run one of the makefile commands to execute the game.
 
 Commands permitted by the Makefile:
 
