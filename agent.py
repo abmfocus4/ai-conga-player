@@ -24,7 +24,7 @@ class Agent:
         return ((parent[0] + direction[0]), (parent[1] + direction[1]))
 
     # WHITE IS MINIMIZING PLAYER
-    def minimizing_player(self, white_squares, black_squares, current_best):
+    def minimizing_player(self, white_squares, black_squares, alpha):
         self.nodes_explored = 0
         min_score = math.inf
         nodes = 0   
@@ -50,7 +50,7 @@ class Agent:
                     evaluation = self.utility_function(
                         white_squares, temp_squares)
 
-                    if evaluation < current_best:
+                    if evaluation < alpha:
                         return evaluation
 
                     if evaluation < min_score:
@@ -190,37 +190,45 @@ class Agent:
             board.move_found = False
             return board
         else:
-            best_move = list()
-            max_score = -math.inf
+            print('MINMAX Agent: BLACK playing')
+            current_depth = self.depth
+            alpha = -math.inf
+            beta = math.inf
+            while (current_depth > 0):
+                current_depth -= 1
+                best_move = list()
+                max_score = -math.inf
 
-            for square in black_squares:
-                for direction in directions:
-                    first = self.get_child(square, direction)
-                    temp_squares = set(black_squares)
-                    temp_move = []
+                for square in black_squares:
+                    for direction in directions:
+                        first = self.get_child(square, direction)
+                        temp_squares = set(black_squares)
+                        temp_move = []
 
-                    if self.is_valid_move(first, white_squares):
-                        temp_squares.add(first)
+                        if self.is_valid_move(first, white_squares):
+                            temp_squares.add(first)
 
-                        temp_move.append(square)
-                        temp_move.append(first)
+                            temp_move.append(square)
+                            temp_move.append(first)
 
-                        second = self.get_child(first, direction)
-                        if self.is_valid_move(second, white_squares):
-                            temp_squares.add(second)
-                            temp_move.append(second)
+                            second = self.get_child(first, direction)
+                            if self.is_valid_move(second, white_squares):
+                                temp_squares.add(second)
+                                temp_move.append(second)
 
-                            third = self.get_child(second, direction)
-                            if self.is_valid_move(third, white_squares):
-                                temp_squares.add(third)
-                                temp_move.append(third)
+                                third = self.get_child(second, direction)
+                                if self.is_valid_move(third, white_squares):
+                                    temp_squares.add(third)
+                                    temp_move.append(third)
 
-                        evaluation = self.minimizing_player(
-                            temp_squares, white_squares, max_score)
+                            evaluation = self.minimizing_player(
+                                temp_squares, white_squares, max_score)
 
-                        if evaluation >= max_score:
-                            best_move = temp_move
-                            max_score = evaluation
+                            if evaluation >= max_score:
+                                best_move = temp_move
+                                max_score = evaluation
+                            
+                            current_depth-=1
 
             success = self.play_minmax_move(board, best_move, black_squares)
 
