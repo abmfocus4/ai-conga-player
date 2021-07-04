@@ -12,6 +12,8 @@
 
 Use the Makefile provided in the directory to run the program.
 
+Download the folder on your local, navigate inside the directory where the Makefile is stored using the console. Run one of the 
+
 Commands permitted by the Makefile:
 
 1. `make fast_play` - Plays a game with random and computer agent until one of them wins. No user input required throughput the game
