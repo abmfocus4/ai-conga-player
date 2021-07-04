@@ -1,6 +1,7 @@
 import sys, pickle
 import constants as const
 
+
 # 4x4 board
 # player1 has 10b (1,4) , player2 has 10w (4,1)
 class CongaBoard():
@@ -14,13 +15,12 @@ class CongaBoard():
         self.valid_move = False
 
         # initialize board - no player, no stones
-        for row in range (1,const.ROWS+1):
+        for row in range(1, const.ROWS + 1):
             self.player[row] = dict()
             self.stones[row] = dict()
-            for col in range(1,const.COLS+1):
+            for col in range(1, const.COLS + 1):
                 self.player[row][col] = const.NULL
                 self.stones[row][col] = 0
-
 
         # first positions
         # Player1 at (1,4) has 10 black stones
@@ -48,11 +48,11 @@ class CongaBoard():
                 player_type = self.player[row][col]
                 if player_type == const.BLACK:
                     color = const.RED
-                elif player_type == const.WHITE:   
+                elif player_type == const.WHITE:
                     color = const.GREEN
                 else:
                     color = const.PURPLE
-                
+
                 # print row
                 num_stones = str(self.stones[row][col])
                 if len(num_stones) == 1:
