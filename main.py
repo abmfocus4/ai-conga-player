@@ -75,13 +75,11 @@ def main():
             # print('here inside')
             conga_board = computer.find_move(conga_board, white_locations, black_locations)
             conga_board.display()
-            # TODO: include number of nodes explored and depth explored
         moves+=1
 
         print("")
 
     print("***************************")
-    # TODO: add more output lines
     print("Total number of moves played: " + str(moves))
 
 

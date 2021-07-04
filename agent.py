@@ -115,7 +115,7 @@ class Agent:
         return self.is_inside_board(dest) and dest not in occupied_squares
     
     # USER PLAYS THE MOVE ONCE THEY DECIDE WHAT TO DO
-    def play_minmax_move(self, board, move, max_player_squares):
+    def play_move(self, board, move, player_squares):
         if len(move) != 0:
             current_square = move[0]
             col_idx = current_square[0]
@@ -126,23 +126,23 @@ class Agent:
 
             if num_steps == 3:
                 self.update_board(
-                    board, current_square, move[1], 1, max_player_squares)
+                    board, current_square, move[1], 1, player_squares)
                 self.update_board(
-                    board, current_square, move[2], 2, max_player_squares)
+                    board, current_square, move[2], 2, player_squares)
                 self.update_board(
-                    board, current_square, move[3], num - 3, max_player_squares)
+                    board, current_square, move[3], num - 3, player_squares)
                 return True
 
             elif num_steps == 2:
                 self.update_board(
-                    board, current_square, move[1], 1, max_player_squares)
+                    board, current_square, move[1], 1, player_squares)
                 self.update_board(
-                    board, current_square, move[2], num - 1, max_player_squares)
+                    board, current_square, move[2], num - 1, player_squares)
                 return True
 
             elif num_steps == 1:
                 self.update_board(
-                    board, current_square, move[1], num, max_player_squares)
+                    board, current_square, move[1], num, player_squares)
                 return True
 
             print("No move possible WHITE LOST")
@@ -159,37 +159,34 @@ class Agent:
             random.shuffle(directions)
             for square in white_squares:
                 for direction in directions:
+                    temp_move = list()
                     col_idx = square[0]
                     row_idx = square[1]
-                    num = board.stones[col_idx][row_idx]
 
+                    temp_move.append(square)
+                    num = board.stones[col_idx][row_idx]
                     first = self.get_child(square, direction)
                     if self.is_valid_move(first, black_squares):
 
                         second = self.get_child(first, direction)
                         if not self.is_valid_move(second, black_squares):
-                            self.update_board(
-                                board, square, first, num, white_squares)
-                            board.move_found = True
-                            return board
+                            temp_move.append(first)
+                            success = self.play_move(board, temp_move, white_squares)
+                            if success:
+                                board.move_found = True
+                                return board
                         else:
                             third = self.get_child(second, direction)
                             if not self.is_valid_move(third, black_squares):
-                                self.update_board(
-                                    board, square, first, 1, white_squares)
-                                self.update_board(
-                                    board, square, second, num - 1, white_squares)
-                                board.move_found = True
-                                return board
+                                success = self.play_move(board, [square, first, second], white_squares)
+                                if success:
+                                    board.move_found = True
+                                    return board
                             else:
-                                self.update_board(
-                                    board, square, first, 1, white_squares)
-                                self.update_board(
-                                    board, square, second, 2, white_squares)
-                                self.update_board(
-                                    board, square, third, num - 3, white_squares)
-                                board.move_found = True
-                                return board
+                                success = self.play_move(board, [square, first, second, third], white_squares)
+                                if success:
+                                    board.move_found = True
+                                    return board
             print('No possible move WHITE lost')
             board.move_found = False
             return board
@@ -245,7 +242,7 @@ class Agent:
                             
                             current_depth-=1
 
-            success = self.play_minmax_move(board, best_move, black_squares)
+            success = self.play_move(board, best_move, black_squares)
 
             if success:
                 print(str(self.nodes_explored*2) + ' node/s were explored to find the best move')
