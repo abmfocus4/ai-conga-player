@@ -1,7 +1,7 @@
-restricted_conga:
+fast_play:
 	python3 main.py 0
 
-unrestricted_conga:
+slow_play:
 	python3 main.py 1
 
 clean:
