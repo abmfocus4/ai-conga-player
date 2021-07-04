@@ -50,6 +50,8 @@ class Agent:
                     evaluation = self.utility_function(
                         white_squares, temp_squares)
 
+                    self.nodes_explored += nodes
+
                     if evaluation < alpha:
                         return evaluation
 
@@ -233,6 +235,8 @@ class Agent:
             success = self.play_minmax_move(board, best_move, black_squares)
 
             if success:
+                print(str(self.nodes_explored*2) + ' node/s were explored to find the best move')
+                print('The depth of the search tree traversed is ' + str(self.depth))
                 board.move_found = True
                 return board
             else:
