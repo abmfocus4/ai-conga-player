@@ -8,8 +8,8 @@ class Agent:
         super().__init__()
 
         self.player_type = player_type
-        self.num_nodes_explored = 0
-        self.depth = 4
+        self.nodes_explored = 0
+        self.depth = 2
 
     def get_directions(self):
         directions = list()
@@ -24,11 +24,14 @@ class Agent:
         return ((parent[0] + direction[0]), (parent[1] + direction[1]))
 
     # WHITE is minimizing player
-    def minimizing_player(self, white_squares, black_squares, current_best):
-        best_eval = math.inf
+    def minimizing_player(self, white_squares, black_squares, alpha):
+        self.nodes_explored = 0
+        min_score = math.inf
+        nodes = 0
 
         for square in black_squares:
             for direction in self.get_directions():
+                nodes += 1
                 temp_squares = set(black_squares)
                 first = self.get_child(square, direction)
 
@@ -46,13 +49,13 @@ class Agent:
                     evaluation = self.utility_function(
                         white_squares, temp_squares)
 
-                    if evaluation < current_best:
+                    if evaluation <= alpha:
+                        self.nodes_explored = nodes
                         return evaluation
 
-                    if evaluation < best_eval:
-                        best_eval = evaluation
-
-        return best_eval
+                    min_score = min(min_score, evaluation)
+        self.nodes_explored += nodes
+        return min_score
 
     def utility_function(self, max_squares, min_squares):
         squares_score = 0
@@ -76,8 +79,7 @@ class Agent:
 
     # moving stones on the board
     def update_board(self, board, src, dest, given_stones, player_squares):
-        total_stones = board.stones[src[0]][src[1]]
-        stones = min(given_stones, total_stones)
+        stones = min(given_stones, board.stones[src[0]][src[1]])
         if stones > 0:
             if not board.player[dest[0]][dest[1]] == self.player_type:
                 board.player[dest[0]][dest[1]] = self.player_type
@@ -102,32 +104,31 @@ class Agent:
     def is_valid_move(self, dest, occupied_squares):
         return self.is_inside_board(dest) and dest not in occupied_squares
 
-    def play_minmax_move(self, board, move, max_player_squares):
+    def play_move(self, board, move, player_squares):
         if len(move) != 0:
             current_square = move[0]
             col_idx = current_square[0]
             row_idx = current_square[1]
             num = board.stones[col_idx][row_idx]
-            if len(move) == 2:
+
+            if len(move) == 4:
                 self.update_board(
-                    board, current_square, move[1], num, max_player_squares)
+                    board, current_square, move[1], 1, player_squares)
+                self.update_board(
+                    board, current_square, move[2], 2, player_squares)
+                self.update_board(
+                    board, current_square, move[3], num - 3, player_squares)
                 return True
             elif len(move) == 3:
                 self.update_board(
-                    board, current_square, move[1], 1, max_player_squares)
+                    board, current_square, move[1], 1, player_squares)
                 self.update_board(
-                    board, current_square, move[2], num - 1, max_player_squares)
+                    board, current_square, move[2], num - 1, player_squares)
                 return True
-            elif len(move) == 4:
+            elif len(move) == 2:
                 self.update_board(
-                    board, current_square, move[1], 1, max_player_squares)
-                self.update_board(
-                    board, current_square, move[2], 2, max_player_squares)
-                self.update_board(
-                    board, current_square, move[3], num - 3, max_player_squares)
+                    board, current_square, move[1], num, player_squares)
                 return True
-
-            print("No move possible WHITE LOST")
         return False
 
     def make_move(self, board, white_squares, black_squares):
@@ -138,76 +139,70 @@ class Agent:
             random.shuffle(directions)
             for square in white_squares:
                 for direction in directions:
-                    col_idx = square[0]
-                    row_idx = square[1]
-                    num = board.stones[col_idx][row_idx]
-
+                    move = [square]
                     first = self.get_child(square, direction)
                     if self.is_valid_move(first, black_squares):
-
                         second = self.get_child(first, direction)
                         if not self.is_valid_move(second, black_squares):
-                            self.update_board(
-                                board, square, first, num, white_squares)
-                            board.move_found = True
-                            return board
+                            move.append(first)
                         else:
                             third = self.get_child(second, direction)
                             if not self.is_valid_move(third, black_squares):
-                                self.update_board(
-                                    board, square, first, 1, white_squares)
-                                self.update_board(
-                                    board, square, second, num - 1, white_squares)
-                                board.move_found = True
-                                return board
+                                move.append(second)
                             else:
-                                self.update_board(
-                                    board, square, first, 1, white_squares)
-                                self.update_board(
-                                    board, square, second, 2, white_squares)
-                                self.update_board(
-                                    board, square, third, num - 3, white_squares)
-                                board.move_found = True
-                                return board
-            print('No possible move WHITE lost')
+                                move.append(third)
+                    success = self.play_move(board, move, white_squares)
+                    if success:
+                        board.move_found = True
+                        return board
+            print('Trapped by BLACK squares, WHITE lost!')
             board.move_found = False
             return board
         else:
-            best_move = list()
-            best_eval = -math.inf
+            print('MINMAX Agent: BLACK playing')
+            current_depth = self.depth
+            while (current_depth > 0):
+                current_depth -= 1
+                best_move = list()
+                max_score = -math.inf
+                self.nodes_explored = 0
 
-            for square in black_squares:
-                for direction in directions:
-                    first = self.get_child(square, direction)
-                    temp_squares = set(black_squares)
-                    temp_move = []
+                for square in black_squares:
+                    for direction in directions:
+                        first = self.get_child(square, direction)
+                        temp_squares = set(black_squares)
+                        temp_move = list()
 
-                    if self.is_valid_move(first, white_squares):
-                        temp_squares.add(first)
+                        if self.is_valid_move(first, white_squares):
+                            temp_squares.add(first)
 
-                        temp_move.append(square)
-                        temp_move.append(first)
+                            temp_move.append(square)
+                            temp_move.append(first)
 
-                        second = self.get_child(first, direction)
-                        if self.is_valid_move(second, white_squares):
-                            temp_squares.add(second)
-                            temp_move.append(second)
+                            second = self.get_child(first, direction)
+                            if self.is_valid_move(second, white_squares):
+                                temp_squares.add(second)
+                                temp_move.append(second)
 
-                            third = self.get_child(second, direction)
-                            if self.is_valid_move(third, white_squares):
-                                temp_squares.add(third)
-                                temp_move.append(third)
+                                third = self.get_child(second, direction)
+                                if self.is_valid_move(third, white_squares):
+                                    temp_squares.add(third)
+                                    temp_move.append(third)
 
-                        evaluation = self.minimizing_player(
-                            temp_squares, white_squares, best_eval)
+                            evaluation = self.minimizing_player(
+                                temp_squares, white_squares, max_score)
 
-                        if evaluation >= best_eval:
-                            best_move = temp_move
-                            best_eval = evaluation
-
-            success = self.play_minmax_move(board, best_move, black_squares)
+                            if evaluation > max_score:
+                                best_move = temp_move
+                                max_score = evaluation
+                                
+                            current_depth -=1
+                            
+            success = self.play_move(board, best_move, black_squares)
 
             if success:
+                print(str(self.nodes_explored*2) + ' node/s were explored to find the best move')
+                print('The depth of the search tree traversed is ' + str(self.depth))
                 board.move_found = True
                 return board
             else:
