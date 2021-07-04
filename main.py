@@ -42,10 +42,10 @@ def main():
 
     # current number of moves in the game
     moves = 0
-    conga_board = random_agent.make_move(conga_board, white_locations, black_locations)
+    conga_board = random_agent.find_move(conga_board, white_locations, black_locations)
     conga_board.display()
     if conga_board.move_found:
-        conga_board = computer.make_move(conga_board, white_locations, black_locations)
+        conga_board = computer.find_move(conga_board, white_locations, black_locations)
         conga_board.display()
 
     while conga_board.move_found:
@@ -68,12 +68,12 @@ def main():
             # black is computer
             computer = agent.Agent(constants.BLACK)
 
-        conga_board = random_agent.make_move(conga_board, white_locations, black_locations)
+        conga_board = random_agent.find_move(conga_board, white_locations, black_locations)
         # print(white_locations)
         conga_board.display()
         if conga_board.move_found:
             # print('here inside')
-            conga_board = computer.make_move(conga_board, white_locations, black_locations)
+            conga_board = computer.find_move(conga_board, white_locations, black_locations)
             conga_board.display()
             # TODO: include number of nodes explored and depth explored
         moves+=1

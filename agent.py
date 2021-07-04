@@ -9,7 +9,7 @@ class Agent:
 
         self.player_type = player_type
         self.num_nodes_explored = 0
-        self.depth = 4
+        self.depth = 2
 
     def get_directions(self):
         directions = list()
@@ -25,11 +25,13 @@ class Agent:
 
     # WHITE IS MINIMIZING PLAYER
     def minimizing_player(self, white_squares, black_squares, current_best):
-        best_eval = math.inf
-
+        self.nodes_explored = 0
+        min_score = math.inf
+        nodes = 0   
         # GET MOVES PLAYED BY WHITE
         for square in black_squares:
             for direction in self.get_directions():
+                nodes += 1
                 temp_squares = set(black_squares)
                 first = self.get_child(square, direction)
 
@@ -51,10 +53,10 @@ class Agent:
                     if evaluation < current_best:
                         return evaluation
 
-                    if evaluation < best_eval:
-                        best_eval = evaluation
-
-        return best_eval
+                    if evaluation < min_score:
+                        min_score = evaluation
+        self.nodes_explored += nodes
+        return min_score
 
     # USED TO EVALUATED THE GOODNESS OF A MOVE
     def utility_function(self, max_squares, min_squares):
@@ -79,8 +81,7 @@ class Agent:
 
    # UPDATE THE BOARD BASED ON THE STEPS
     def update_board(self, board, src, dest, given_stones, player_squares):
-        total_stones = board.stones[src[0]][src[1]]
-        stones = min(given_stones, total_stones)
+        stones = min(given_stones, board.stones[src[0]][src[1]])
         if stones > 0:
             # NEWLY OCCUPIED SQUARE - SET PLAYER TYPE
             if not board.player[dest[0]][dest[1]] == self.player_type:
@@ -185,7 +186,7 @@ class Agent:
             return board
         else:
             best_move = list()
-            best_eval = -math.inf
+            max_score = -math.inf
 
             for square in black_squares:
                 for direction in directions:
@@ -210,11 +211,11 @@ class Agent:
                                 temp_move.append(third)
 
                         evaluation = self.minimizing_player(
-                            temp_squares, white_squares, best_eval)
+                            temp_squares, white_squares, max_score)
 
-                        if evaluation >= best_eval:
+                        if evaluation >= max_score:
                             best_move = temp_move
-                            best_eval = evaluation
+                            max_score = evaluation
 
             success = self.play_minmax_move(board, best_move, black_squares)
 
