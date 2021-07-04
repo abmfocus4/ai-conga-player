@@ -32,16 +32,16 @@ class Agent:
             for direction in directions:
                 first = self.get_child(square, direction)
 
-                if self.is_inside_board(first) and first not in white_squares:
+                if self.is_valid_move(first, white_squares):
                     potential_stones = set(black_squares)
                     potential_stones.add(first)
 
                     second = self.get_child(first, direction)
-                    if second not in white_squares and self.is_inside_board(second):
+                    if self.is_valid_move(second, white_squares):
                         potential_stones.add(second)
 
                         third = self.get_child(second, direction)
-                        if third not in white_squares and self.is_inside_board(third):
+                        if self.is_valid_move(third, white_squares):
                             potential_stones.add(third)
 
                     evaluation = self.utility_function(
@@ -65,18 +65,18 @@ class Agent:
                 possible_moves.append((i, j))
         possible_moves.remove((0, 0))
 
-        for row, col in max_squares:
+        for square in max_squares:
             squares_score += 10
             for move in possible_moves:
-                first = (col+move[0], row+move[1])
-                if self.is_inside_board(first) and first not in min_squares:
+                first = self.get_child(square, move)
+                if self.is_valid_move(first, min_squares):
                     moves_score += 1
 
-        for row, col in min_squares:
+        for square in min_squares:
             squares_score -= 10
             for move in possible_moves:
-                first = (col+move[0], row+move[1])
-                if self.is_inside_board(first) and first not in max_squares:
+                first = self.get_child(square, move)
+                if self.is_valid_move(first, max_squares):
                     moves_score -= 1
 
         return squares_score
@@ -111,7 +111,6 @@ class Agent:
 
     def is_valid_move(self, dest, occupied_squares):
         return self.is_inside_board(dest) and dest not in occupied_squares
-
 
     def make_move(self, board, white_locations, black_locations):
         possible_moves = list()

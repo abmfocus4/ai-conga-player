@@ -49,8 +49,8 @@ def main():
         conga_board.display()
 
     while conga_board.move_found:
-        moves+=1
         if moves == max_moves:
+            moves = 0
             # set of squares where black has stones
             black_locations = set()
             # set of squares where black has stones
@@ -76,6 +76,8 @@ def main():
             conga_board = computer.make_move(conga_board, white_locations, black_locations)
             conga_board.display()
             # TODO: include number of nodes explored and depth explored
+        moves+=1
+
         print("")
 
     print("***************************")
