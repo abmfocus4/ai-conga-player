@@ -14,7 +14,7 @@ Use the Makefile provided in the directory to run the program.
 
 Commands permitted by the Makefile:
 
-1. `make fast_play` - Plays a game with random and computer agent until one of them wins
+1. `make fast_play` - Plays a game with random and computer agent until one of them wins. No user input required throughput the game
 2. `make slow_play` - Displays one move at a time, asks the user to press 'y' if they want to see the next move and 'x' to exit the game
 3. `make clean`
 
