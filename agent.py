@@ -229,6 +229,14 @@ class Agent:
                             if evaluation >= max_score:
                                 best_move = temp_move
                                 max_score = evaluation
+
+                            # ALPHA BETA PRUNING
+                            # UPDATING ALPHA
+                            alpha = max(alpha, max_score)
+
+                            # BREAKING FROM LOOP IS MAX VALUE FOUND
+                            if beta <= alpha:
+                                break
                             
                             current_depth-=1
 
