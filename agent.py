@@ -23,15 +23,17 @@ class Agent:
     def get_child(self, parent, direction):
         return ((parent[0] + direction[0]), (parent[1] + direction[1]))
 
-    # WHITE is minimizing player
+    # WHITE IS MINIMIZING PLAYER
     def minimizing_player(self, white_squares, black_squares, current_best):
         best_eval = math.inf
 
+        # GET MOVES PLAYED BY WHITE
         for square in black_squares:
             for direction in self.get_directions():
                 temp_squares = set(black_squares)
                 first = self.get_child(square, direction)
 
+                # GET CURRENT MOVE
                 if self.is_valid_move(first, white_squares):
                     temp_squares.add(first)
 
@@ -42,7 +44,7 @@ class Agent:
                         third = self.get_child(second, direction)
                         if self.is_valid_move(third, white_squares):
                             temp_squares.add(third)
-
+                    # CHECK IT'S GOODNESS
                     evaluation = self.utility_function(
                         white_squares, temp_squares)
 
@@ -54,6 +56,7 @@ class Agent:
 
         return best_eval
 
+    # USED TO EVALUATED THE GOODNESS OF A MOVE
     def utility_function(self, max_squares, min_squares):
         squares_score = 0
         moves_score = 0
@@ -74,14 +77,16 @@ class Agent:
 
         return squares_score
 
-    # moving stones on the board
+   # UPDATE THE BOARD BASED ON THE STEPS
     def update_board(self, board, src, dest, given_stones, player_squares):
         total_stones = board.stones[src[0]][src[1]]
         stones = min(given_stones, total_stones)
         if stones > 0:
+            # NEWLY OCCUPIED SQUARE - SET PLAYER TYPE
             if not board.player[dest[0]][dest[1]] == self.player_type:
                 board.player[dest[0]][dest[1]] = self.player_type
 
+            # ADD STONES TO DEST, REMOVE STONES FROM SRC
             board.stones[dest[0]][dest[1]] += stones
             board.stones[src[0]][src[1]] -= stones
             player_squares.add(dest)
@@ -94,14 +99,17 @@ class Agent:
             print('Move: Board updated by moving ' + str(stones) +
                   ' stones from ' + str(src) + ' to ' + str(dest))
 
+    # CONTRAINTS FOR BOARD
     def is_inside_board(self, dest):
         if (dest[1] >= 1) and (dest[1] <= const.ROWS) and (dest[0] >= 1) and (dest[0] <= const.COLS):
             return True
         return False
 
+    # VALID MOVE : IS INSIDE THE BOARD AND DOES NOT BELONG TO OPPONENT
     def is_valid_move(self, dest, occupied_squares):
         return self.is_inside_board(dest) and dest not in occupied_squares
-
+    
+    # USER PLAYS THE MOVE ONCE THEY DECIDE WHAT TO DO
     def play_minmax_move(self, board, move, max_player_squares):
         if len(move) != 0:
             current_square = move[0]
@@ -130,11 +138,14 @@ class Agent:
             print("No move possible WHITE LOST")
         return False
 
-    def make_move(self, board, white_squares, black_squares):
+    # BASED ON THE AGENT, IMPLEMENT THE THINKING BEHIND THE MOVE
+    def find_move(self, board, white_squares, black_squares):
         directions = self.get_directions()
 
         if self.player_type == const.RANDOM:
             print('Random Agent: WHITE playing')
+            # UNORDERED DATA STRUCTION, white_squares IS A SET
+            # DIRECTIONS IS A LIST, SHUFFLED BY RANDOM AGENT BEFORE SELECTION
             random.shuffle(directions)
             for square in white_squares:
                 for direction in directions:
