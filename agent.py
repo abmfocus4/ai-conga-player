@@ -52,11 +52,13 @@ class Agent:
 
                     self.nodes_explored += nodes
 
+                    # PRUNING
                     if evaluation < alpha:
                         return evaluation
+                    
+                    # UPDATING MIN SCORE
+                    min_score = min(evaluation, min_score)
 
-                    if evaluation < min_score:
-                        min_score = evaluation
         self.nodes_explored += nodes
         return min_score
 
@@ -193,6 +195,7 @@ class Agent:
             return board
         else:
             print('MINMAX Agent: BLACK playing')
+            # SETTING THE CURRENT DEPTH OF FIRST ITERATION AS MAX_DEPTH
             current_depth = self.depth
             alpha = -math.inf
             beta = math.inf
@@ -204,8 +207,9 @@ class Agent:
                 for square in black_squares:
                     for direction in directions:
                         first = self.get_child(square, direction)
+                        # KEEPING TRACK OF STEPS ALONG WITH SQUARES OCCUPIED BY SELECTING STEP
                         temp_squares = set(black_squares)
-                        temp_move = []
+                        temp_move = list()
 
                         if self.is_valid_move(first, white_squares):
                             temp_squares.add(first)
@@ -223,10 +227,11 @@ class Agent:
                                     temp_squares.add(third)
                                     temp_move.append(third)
 
+                            # FINDING EVALUATION OF MINIMIZING PLAYER
                             evaluation = self.minimizing_player(
                                 temp_squares, white_squares, max_score)
 
-                            if evaluation >= max_score:
+                            if evaluation > max_score:
                                 best_move = temp_move
                                 max_score = evaluation
 
