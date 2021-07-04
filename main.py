@@ -5,10 +5,6 @@ import board
 import constants
 
 
-# TODO
-# output depth and nodes explored
-# completing bonus
-# row and col differences
 def main():
     print("")
     print('Welcome to Conga Board!')
@@ -37,9 +33,9 @@ def main():
             if int(max_moves) <= 0:
                 print("Try again! Number of moves in an active game are greater than zero\n")
     else:
-        max_moves = 200
+        max_moves = 300
 
-    # # white is random agent
+    # white is random agent
     random_agent = agent.Agent(constants.WHITE)
     # black is computer
     computer = agent.Agent(constants.BLACK)
@@ -48,18 +44,12 @@ def main():
     moves = 0
     conga_board = random_agent.make_move(conga_board, white_locations, black_locations)
     conga_board.display()
-    moves += 1
-    if conga_board.is_valid_move:
+    if conga_board.move_found:
         conga_board = computer.make_move(conga_board, white_locations, black_locations)
         conga_board.display()
-        moves += 1
 
-    # first move set 
-    # white makes the first move, followed by black
-    #  
-    while conga_board.is_valid_move:
-        # print('here')
-        # print(white_locations)
+    while conga_board.move_found:
+        moves+=1
         if moves == max_moves:
             # set of squares where black has stones
             black_locations = set()
@@ -81,20 +71,14 @@ def main():
         conga_board = random_agent.make_move(conga_board, white_locations, black_locations)
         # print(white_locations)
         conga_board.display()
-        moves += 1
-        if conga_board.is_valid_move:
+        if conga_board.move_found:
             # print('here inside')
             conga_board = computer.make_move(conga_board, white_locations, black_locations)
             conga_board.display()
             # TODO: include number of nodes explored and depth explored
-            moves += 1
         print("")
 
-        # play = input('Press Y to continue:')
-        # if play != 'y' and moves > 100:
-        #     break
-
-    print("%%%%%%%%%%%%%%%%%%%%%%%%")
+    print("***************************")
     # TODO: add more output lines
     print("Total number of moves played: " + str(moves))
 
